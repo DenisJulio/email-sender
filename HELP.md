@@ -8,4 +8,4 @@
   
 ## Todo
 
-- [ ] \  Study the structure of an email message  
+- [ ]  Study the structure of an email message  

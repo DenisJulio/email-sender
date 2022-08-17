@@ -1,0 +1,18 @@
+=== Docs
+
+* https://docs.asciidoctor.org/asciidoc/latest/[AsciiDoc Doc]
+* https://mailtrap.io/blog/jakarta-mail-tutorial/[Jakarta Mail Totorial | Mailtrip]
+* https://jakarta.ee/specifications/mail/2.0/[Jakarta Mail Spec]
+
+==== From dependencies
+
+* https://jakarta.ee/specifications/expression-language/4.0/jakarta-expression-language-spec-4.0.html[Jakarta EL]
+* https://docs.jboss.org/hibernate/stable/validator/reference/en-US/html_single/#preface[Hibernate Validator]
+
+=== Study
+
+- [ ] MVC Pattern
+
+=== Research
+
+* https://stackoverflow.com/questions/31576623/how-mvc-work-with-java-swing-gui[MVC with Swing]
