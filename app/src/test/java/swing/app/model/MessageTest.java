@@ -18,17 +18,17 @@ class MessageTest {
 	}
 	
 	@Test
-	void invalidateMessageWithNulls() {
-		var message = new Message(null, null, null, null);
-		var violations = validator.validate(message);
-		assertTrue(!violations.isEmpty());
-		assertEquals(4, violations.size());
-	}
-	
-	@Test
 	void acceptValidMessageFormat() {
 		var message = new Message("sender@host", "receiver@host", "testing", "content");
 		var violations = validator.validate(message);
 		assertTrue(violations.isEmpty());
+	}
+	
+	@Test
+	void rejectInvaliMessageFormat() {
+		var message = new Message("sender", "receiver", "", "");
+		var violations = validator.validate(message);
+		assertTrue(!violations.isEmpty());
+		assertEquals(4, violations.size());
 	}
 }

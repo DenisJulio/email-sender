@@ -16,3 +16,9 @@
 === Research
 
 * https://stackoverflow.com/questions/31576623/how-mvc-work-with-java-swing-gui[MVC with Swing]
+
+=== Ui Development Principles
+
+* *Define* expected state and useflow;
+* *Constrain* the application into authoring only expected behavior;
+* *Guide* the user towards the expected behavior.

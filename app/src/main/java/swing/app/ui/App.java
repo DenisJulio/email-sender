@@ -1,29 +1,9 @@
 package swing.app.ui;
 
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.GridLayout;
-
-import javax.swing.BorderFactory;
-import javax.swing.Box;
 import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
-import javax.swing.border.EmptyBorder;
-import javax.swing.border.CompoundBorder;
-import javax.swing.border.LineBorder;
 
-import jakarta.mail.PasswordAuthentication;
 import swing.app.controller.WriteMessagePanelController;
-
-import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import javax.swing.SwingConstants;
-import java.awt.ComponentOrientation;
 
 public class App {
 
