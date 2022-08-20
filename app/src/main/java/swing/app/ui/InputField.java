@@ -28,8 +28,6 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 
-import org.checkerframework.common.returnsreceiver.qual.This;
-
 import lombok.Getter;
 
 /**
@@ -50,7 +48,7 @@ public final class InputField extends JPanel implements DocumentListener, CaretL
 	private JTextComponent inputTextComponent;
 	private Box labelsBox;
 	private GridBagConstraints labelsBoxGBC;
-	private GridBagConstraints inputFieldGBC;
+	private GridBagConstraints inputTextComponentGBC;
 	@Getter
 	/**
 	 * Tracks the validity state of the user provided input.
@@ -69,36 +67,12 @@ public final class InputField extends JPanel implements DocumentListener, CaretL
 		this.validationLogic = validationLogic;
 		this.mainLabel = createMainLabel();
 		this.warnLabel = createWarnLabel();
-		
-		this.inputTextComponent = switch (textComponentType) {
-			case TEXT_FIELD -> createInputField();
-			case TEXT_AREA -> createTextAreaComponent();
-			default ->
-				throw new IllegalArgumentException("Unexpected value: " + textComponentType);
-		};
+
+		this.inputTextComponent = createInputTextComponent(textComponentType);
 		this.labelsBox = createLabelsBox(mainLabel, warnLabel);
 		this.labelsBoxGBC = createLabelsBoxGBC();
-		this.inputFieldGBC = createInputFieldGBC();
-		GridBagLayout gridBagLayout = new GridBagLayout();
-		gridBagLayout.columnWeights = new double[] { 1.0 };
-		setLayout(gridBagLayout);
-		add(labelsBox, labelsBoxGBC);
-		if (inputTextComponent instanceof JTextArea textArea) {
-			var scroollContainer = createScrollableTextAreaContainer(textArea);
-			add(scroollContainer, inputFieldGBC);
-		} else {
-			add(inputTextComponent, inputFieldGBC);
-		}
-	}
-
-	private void setValidInput(boolean newValue) {
-		var oldValue = this.validInput;
-		this.validInput = newValue;
-		pcs.firePropertyChange("validInput", oldValue, newValue);
-	}
-
-	public static Builder builder() {
-		return new Builder();
+		this.inputTextComponentGBC = createInputTextComponentGBC();
+		this.setLayout(createLayoutLogic());
 	}
 
 	/**
@@ -113,7 +87,17 @@ public final class InputField extends JPanel implements DocumentListener, CaretL
 				: Optional.empty();
 	}
 	
-	//-------------------------[Listeners]-----------------------------------
+	private void setValidInput(boolean newValue) {
+		var oldValue = this.validInput;
+		this.validInput = newValue;
+		pcs.firePropertyChange("validInput", oldValue, newValue);
+	}
+	
+	public static Builder builder() {
+		return new Builder();
+	}
+	
+	// -------------------------[Listeners]-----------------------------------
 	
 	@Override
 	public void insertUpdate(DocumentEvent e) {
@@ -143,13 +127,13 @@ public final class InputField extends JPanel implements DocumentListener, CaretL
 	@Override
 	public void caretUpdate(CaretEvent e) {
 		if (nonNull(this.validationLogic)) {
-			var textField = (JTextComponent) e.getSource();
-			setValidInput(this.validationLogic.test(textField.getText()));
+			var textComponent = (JTextComponent) e.getSource();
+			setValidInput(this.validationLogic.test(textComponent.getText()));
 			warnLabel.setVisible(!isValidInput());
 		}
 	}
 	
-	// ------------------------[Components]------------------------------
+	// ------------------------[Component Initialization]------------------------------
 
 	private JLabel createMainLabel() {
 		return new JLabel(this.mainLabelText);
@@ -199,17 +183,32 @@ public final class InputField extends JPanel implements DocumentListener, CaretL
 		return scrollPane;
 	}
 	
-	// ---------------------------[GridBagConstraints]--------------------------------
-
-	private GridBagConstraints createInputFieldGBC() {
-		var constraints = new GridBagConstraints();
-		constraints.gridx = 0;
-		constraints.gridy = 1;
-		constraints.fill = GridBagConstraints.HORIZONTAL;
-		constraints.anchor = GridBagConstraints.NORTH;
-		constraints.ipady = 5;
-		return constraints;
+	private JTextComponent createInputTextComponent(int textComponentType) {
+		return switch (textComponentType) {
+			case TEXT_FIELD -> createInputField();
+			case TEXT_AREA -> createTextAreaComponent();
+			default ->
+				throw new IllegalArgumentException("Unexpected value: " + textComponentType);
+		};
 	}
+	
+	// ----------------------------[Layout Placement]----------------------------------
+	
+	private GridBagLayout createLayoutLogic() {
+		var layout = new GridBagLayout();
+		layout.columnWeights = new double[] { 1.0 };
+		// ----------- layout placement logic
+		this.add(labelsBox, labelsBoxGBC);
+		if (inputTextComponent instanceof JTextArea textArea) {
+			var scroollContainer = createScrollableTextAreaContainer(textArea);
+			this.add(scroollContainer, inputTextComponentGBC);
+		} else {
+			this.add(inputTextComponent, inputTextComponentGBC);
+		}
+		return layout;
+	}
+	
+	// ---------------------------[GridBagConstraints]--------------------------------
 
 	private GridBagConstraints createLabelsBoxGBC() {
 		var constraints = new GridBagConstraints();
@@ -218,6 +217,16 @@ public final class InputField extends JPanel implements DocumentListener, CaretL
 		constraints.fill = GridBagConstraints.HORIZONTAL;
 		constraints.anchor = GridBagConstraints.NORTH;
 		constraints.insets = new Insets(0, 0, 5, 0);
+		return constraints;
+	}
+	
+	private GridBagConstraints createInputTextComponentGBC() {
+		var constraints = new GridBagConstraints();
+		constraints.gridx = 0;
+		constraints.gridy = 1;
+		constraints.fill = GridBagConstraints.HORIZONTAL;
+		constraints.anchor = GridBagConstraints.NORTH;
+		constraints.ipady = 5;
 		return constraints;
 	}
 
