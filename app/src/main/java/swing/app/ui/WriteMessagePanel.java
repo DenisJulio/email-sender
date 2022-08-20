@@ -21,30 +21,24 @@ public class WriteMessagePanel extends JPanel {
 	private WriteMessagePanelController controller;
 	private InputField toInputField;
 	private InputField subjectInputField;
-	private JLabel contentLabel;
-	private JTextArea messageContentTextArea;
-	private JScrollPane scrollableTextAreaContainer;
+	private InputField messageContentInputField;
 	private JButton sendButton;
 
 	private GridBagConstraints toInputFieldGBC;
 	private GridBagConstraints subjectInputFieldGBC;
-	private GridBagConstraints contentLabelGBC;
-	private GridBagConstraints scrollableTextAreaContainerGBC;
+	private GridBagConstraints messageContentGBC;
 	private GridBagConstraints sendButtonGBC;
 
 	public WriteMessagePanel(WriteMessagePanelController controller) {
 		this.controller = controller;
 		this.toInputField = createToInputField();
 		this.subjectInputField = createSubjectInputField();
-		contentLabel = createContentLabel();
-		messageContentTextArea = createMessageContentTextArea();
-		scrollableTextAreaContainer = createScrollableTextAreaContainer(messageContentTextArea);
-		sendButton = createSendButton();
+		this.messageContentInputField = createMessageContentInputField();
+		this.sendButton = createSendButton();
 
 		this.toInputFieldGBC = createToInputFieldGBC();
 		this.subjectInputFieldGBC = createSubjectInputFieldGBC();
-		contentLabelGBC = createContentLabelGBC();
-		scrollableTextAreaContainerGBC = createScrollableTextAreaContainerGBC();
+		this.messageContentGBC = createMessageContentGBC();
 		sendButtonGBC = createSendButtonGBC();
 
 		setLayout(new GridBagLayout());
@@ -52,8 +46,7 @@ public class WriteMessagePanel extends JPanel {
 		
 		add(toInputField, toInputFieldGBC);
 		add(subjectInputField, subjectInputFieldGBC);
-		add(contentLabel, contentLabelGBC);
-		add(scrollableTextAreaContainer, scrollableTextAreaContainerGBC);
+		add(messageContentInputField, messageContentGBC);
 		add(sendButton, sendButtonGBC);
 	}
 
@@ -75,25 +68,14 @@ public class WriteMessagePanel extends JPanel {
 				.build();
 	}
 	
-	private JLabel createContentLabel() {
-		return new JLabel("Content:");
-	}
-
-	private JTextArea createMessageContentTextArea() {
-		var textArea = new JTextArea();
-		textArea.setTabSize(4);
-		textArea.setLineWrap(true);
-		textArea.setAutoscrolls(true);
-		textArea.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-		return textArea;
-	}
-
-	private JScrollPane createScrollableTextAreaContainer(JTextArea textArea) {
-		var scrollPane = new JScrollPane(textArea);
-		scrollPane.setPreferredSize(new Dimension(400, 300));
-		scrollPane.setMinimumSize(new Dimension(400, 300));
-		return scrollPane;
-	}
+	private InputField createMessageContentInputField() {
+		return InputField.builder()
+				.labelText("Content:")
+				.warnLabelText("⚠ message content can't be empty")
+				.validateInputBy(controller::isValidContentMessage)
+				.textComponentType(InputField.TEXT_AREA)
+				.build();
+	}	
 
 	private JButton createSendButton() {
 		var button = new JButton("Send");
@@ -123,20 +105,10 @@ public class WriteMessagePanel extends JPanel {
 		return constraints;
 	}
 
-	private GridBagConstraints createContentLabelGBC() {
+	private GridBagConstraints createMessageContentGBC() {
 		var constraints = new GridBagConstraints();
 		constraints.gridx = 0;
 		constraints.gridy = 2;
-		constraints.fill = GridBagConstraints.HORIZONTAL;
-		constraints.anchor = GridBagConstraints.NORTH;
-		constraints.insets = new Insets(0, 0, 5, 0);
-		return constraints;
-	}
-
-	private GridBagConstraints createScrollableTextAreaContainerGBC() {
-		var constraints = new GridBagConstraints();
-		constraints.gridx = 0;
-		constraints.gridy = 3;
 		constraints.anchor = GridBagConstraints.NORTH;
 		constraints.insets = new Insets(0, 0, 5, 0);
 		return constraints;
@@ -145,7 +117,7 @@ public class WriteMessagePanel extends JPanel {
 	private GridBagConstraints createSendButtonGBC() {
 		var constraints = new GridBagConstraints();
 		constraints.gridx = 0;
-		constraints.gridy = 4;
+		constraints.gridy = 3;
 		constraints.fill = GridBagConstraints.HORIZONTAL;
 		constraints.anchor = GridBagConstraints.NORTH;
 		constraints.weighty = 1;

@@ -1,6 +1,9 @@
 package swing.app.ui;
 
+import static java.util.Objects.nonNull;
+
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -10,9 +13,12 @@ import java.beans.PropertyChangeSupport;
 import java.util.Optional;
 import java.util.function.Predicate;
 
+import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.event.CaretEvent;
@@ -20,6 +26,9 @@ import javax.swing.event.CaretListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.JTextComponent;
+
+import org.checkerframework.common.returnsreceiver.qual.This;
 
 import lombok.Getter;
 
@@ -32,17 +41,19 @@ import lombok.Getter;
 public final class InputField extends JPanel implements DocumentListener, CaretListener {
 
 	private static final long serialVersionUID = 1L;
+	public static final int TEXT_FIELD = 0;
+	public static final int TEXT_AREA = 1;
 
 	private JLabel mainLabel;
 	private JLabel warnLabel;
 	@Getter
-	private JTextField inputTextField;
+	private JTextComponent inputTextComponent;
 	private Box labelsBox;
 	private GridBagConstraints labelsBoxGBC;
 	private GridBagConstraints inputFieldGBC;
 	@Getter
 	/**
-	 * Tracks the validity state of the user providede input.
+	 * Tracks the validity state of the user provided input.
 	 */
 	private boolean validInput;
 
@@ -50,14 +61,21 @@ public final class InputField extends JPanel implements DocumentListener, CaretL
 	private final String mainLabelText;
 	private final String warnLabelText;
 	private final transient Predicate<String> validationLogic;
-
-	private InputField(String mainLabelText, String warnLabelText, Predicate<String> validationLogic) {
+	
+	private InputField(String mainLabelText, String warnLabelText, Predicate<String> validationLogic,
+			int textComponentType) {
 		this.mainLabelText = mainLabelText;
 		this.warnLabelText = warnLabelText;
 		this.validationLogic = validationLogic;
 		this.mainLabel = createMainLabel();
 		this.warnLabel = createWarnLabel();
-		this.inputTextField = createInputField();
+		
+		this.inputTextComponent = switch (textComponentType) {
+			case TEXT_FIELD -> createInputField();
+			case TEXT_AREA -> createTextAreaComponent();
+			default ->
+				throw new IllegalArgumentException("Unexpected value: " + textComponentType);
+		};
 		this.labelsBox = createLabelsBox(mainLabel, warnLabel);
 		this.labelsBoxGBC = createLabelsBoxGBC();
 		this.inputFieldGBC = createInputFieldGBC();
@@ -65,9 +83,14 @@ public final class InputField extends JPanel implements DocumentListener, CaretL
 		gridBagLayout.columnWeights = new double[] { 1.0 };
 		setLayout(gridBagLayout);
 		add(labelsBox, labelsBoxGBC);
-		add(inputTextField, inputFieldGBC);
+		if (inputTextComponent instanceof JTextArea textArea) {
+			var scroollContainer = createScrollableTextAreaContainer(textArea);
+			add(scroollContainer, inputFieldGBC);
+		} else {
+			add(inputTextComponent, inputFieldGBC);
+		}
 	}
-	
+
 	private void setValidInput(boolean newValue) {
 		var oldValue = this.validInput;
 		this.validInput = newValue;
@@ -84,9 +107,9 @@ public final class InputField extends JPanel implements DocumentListener, CaretL
 	 * or an {@code Optional.empty()} if the provided input is invalid.
 	 */
 	public Optional<String> getValidatedInput() {
-		var isInputValid = this.validationLogic.test(this.inputTextField.getText());
+		var isInputValid = this.validationLogic.test(this.inputTextComponent.getText());
 		return isInputValid 
-				? Optional.of(this.inputTextField.getText()) 
+				? Optional.of(this.inputTextComponent.getText()) 
 				: Optional.empty();
 	}
 	
@@ -94,15 +117,17 @@ public final class InputField extends JPanel implements DocumentListener, CaretL
 	
 	@Override
 	public void insertUpdate(DocumentEvent e) {
-		var doc = e.getDocument();
-		String text = "";
-		try {
-			text = doc.getText(0, doc.getEndPosition().getOffset());
-		} catch (BadLocationException exception) {
-			exception.printStackTrace();
+		if (nonNull(this.validationLogic)) {
+			var doc = e.getDocument();
+			String text = "";
+			try {
+				text = doc.getText(0, doc.getEndPosition().getOffset());
+			} catch (BadLocationException exception) {
+				exception.printStackTrace();
+			}
+			setValidInput(this.validationLogic.test(text));
+			warnLabel.setVisible(!isValidInput());
 		}
-		setValidInput(this.validationLogic.test(text));
-		warnLabel.setVisible(!isValidInput());
 	}
 	
 	@Override
@@ -117,9 +142,11 @@ public final class InputField extends JPanel implements DocumentListener, CaretL
 	
 	@Override
 	public void caretUpdate(CaretEvent e) {
-		var textField = (JTextField) e.getSource();
-		setValidInput(this.validationLogic.test(textField.getText()));
-		warnLabel.setVisible(!isValidInput());
+		if (nonNull(this.validationLogic)) {
+			var textField = (JTextComponent) e.getSource();
+			setValidInput(this.validationLogic.test(textField.getText()));
+			warnLabel.setVisible(!isValidInput());
+		}
 	}
 	
 	// ------------------------[Components]------------------------------
@@ -154,6 +181,24 @@ public final class InputField extends JPanel implements DocumentListener, CaretL
 		return textField;
 	}
 
+	private JTextArea createTextAreaComponent() {
+		var textArea = new JTextArea();
+		textArea.setTabSize(4);
+		textArea.setLineWrap(true);
+		textArea.setAutoscrolls(true);
+		textArea.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+		textArea.getDocument().addDocumentListener(this);
+		textArea.addCaretListener(this);
+		return textArea;
+	}
+	
+	private JScrollPane createScrollableTextAreaContainer(JTextArea textArea) {
+		var scrollPane = new JScrollPane(textArea);
+		scrollPane.setPreferredSize(new Dimension(400, 300));
+		scrollPane.setMinimumSize(new Dimension(400, 300));
+		return scrollPane;
+	}
+	
 	// ---------------------------[GridBagConstraints]--------------------------------
 
 	private GridBagConstraints createInputFieldGBC() {
@@ -183,7 +228,8 @@ public final class InputField extends JPanel implements DocumentListener, CaretL
 		private String warnLabelText;
 		private Predicate<String> validationLogic;
 		private PropertyChangeListener listener;
-
+		private int textComponentType = 0;
+		
 		public Builder labelText(String text) {
 			this.labelText = text;
 			return this;
@@ -217,9 +263,14 @@ public final class InputField extends JPanel implements DocumentListener, CaretL
 			this.listener = listener;
 			return this;
 		}
+		
+		public Builder textComponentType(int textComponentType) {
+			this.textComponentType = textComponentType;
+			return this;
+		}
 
 		public InputField build() {
-			var inputField = new InputField(labelText, warnLabelText, validationLogic);
+			var inputField = new InputField(labelText, warnLabelText, validationLogic, textComponentType);
 			inputField.pcs.addPropertyChangeListener("validInput", listener);
 			return inputField;
 		}

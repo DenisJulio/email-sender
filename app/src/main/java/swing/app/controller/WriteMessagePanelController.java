@@ -21,4 +21,9 @@ public final class WriteMessagePanelController {
 		var violations = ValidatorProvider.getValidator().validateValue(Message.class, "subject", text);
 		return violations.isEmpty();
 	}
+	
+	public boolean isValidContentMessage(String text) {
+		var violations = ValidatorProvider.getValidator().validateValue(Message.class, "content", text);
+		return violations.isEmpty();
+	}
 }
