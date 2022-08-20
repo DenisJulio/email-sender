@@ -56,23 +56,26 @@ public final class InputField extends JPanel implements DocumentListener, CaretL
 	private boolean validInput;
 
 	private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
-	private final String mainLabelText;
-	private final String warnLabelText;
 	private final transient Predicate<String> validationLogic;
 	
 	private InputField(String mainLabelText, String warnLabelText, Predicate<String> validationLogic,
 			int textComponentType) {
-		this.mainLabelText = mainLabelText;
-		this.warnLabelText = warnLabelText;
 		this.validationLogic = validationLogic;
-		this.mainLabel = createMainLabel();
-		this.warnLabel = createWarnLabel();
-
+		this.mainLabel = createMainLabel(mainLabelText);
+		this.warnLabel = createWarnLabel(warnLabelText);
 		this.inputTextComponent = createInputTextComponent(textComponentType);
 		this.labelsBox = createLabelsBox(mainLabel, warnLabel);
 		this.labelsBoxGBC = createLabelsBoxGBC();
 		this.inputTextComponentGBC = createInputTextComponentGBC();
-		this.setLayout(createLayoutLogic());
+		// ----------- Layout placement
+		setLayout(createLayout());
+		add(labelsBox, labelsBoxGBC);
+		if (inputTextComponent instanceof JTextArea textArea) {
+			var scroollContainer = createScrollableTextAreaContainer(textArea);
+			add(scroollContainer, inputTextComponentGBC);
+		} else {
+			add(inputTextComponent, inputTextComponentGBC);
+		}
 	}
 
 	/**
@@ -135,15 +138,15 @@ public final class InputField extends JPanel implements DocumentListener, CaretL
 	
 	// ------------------------[Component Initialization]------------------------------
 
-	private JLabel createMainLabel() {
-		return new JLabel(this.mainLabelText);
+	private JLabel createMainLabel(String mainLabelText) {
+		return new JLabel(mainLabelText);
 	}
 
-	private JLabel createWarnLabel() {
+	private JLabel createWarnLabel(String warnLabelText) {
 		var font = new Font(Font.SANS_SERIF, Font.PLAIN, 12);
 		var label = new JLabel();
 		label.setFont(font);
-		label.setText(this.warnLabelText);
+		label.setText(warnLabelText);
 		label.setHorizontalAlignment(SwingConstants.TRAILING);
 		label.setForeground(Color.red);
 		label.setVisible(false);
@@ -192,19 +195,11 @@ public final class InputField extends JPanel implements DocumentListener, CaretL
 		};
 	}
 	
-	// ----------------------------[Layout Placement]----------------------------------
+	// --------------------------------[Layout Manager]-------------------------------
 	
-	private GridBagLayout createLayoutLogic() {
+	private GridBagLayout createLayout() {
 		var layout = new GridBagLayout();
 		layout.columnWeights = new double[] { 1.0 };
-		// ----------- layout placement logic
-		this.add(labelsBox, labelsBoxGBC);
-		if (inputTextComponent instanceof JTextArea textArea) {
-			var scroollContainer = createScrollableTextAreaContainer(textArea);
-			this.add(scroollContainer, inputTextComponentGBC);
-		} else {
-			this.add(inputTextComponent, inputTextComponentGBC);
-		}
 		return layout;
 	}
 	
