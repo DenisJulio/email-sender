@@ -149,7 +149,7 @@ public final class InputField extends JPanel implements DocumentListener, CaretL
 		label.setText(warnLabelText);
 		label.setHorizontalAlignment(SwingConstants.TRAILING);
 		label.setForeground(Color.red);
-		label.setVisible(false);
+//		label.setVisible(false);
 		return label;
 	}
 

@@ -1,0 +1,19 @@
+= Tasks
+
+- [x] Abstract the text input component used by the input in the `Builder`;
+
+.example
+[source, java]
+----
+var input = InputField.builder()
+  .inputComponent(JTextArea.class)
+  .build();
+----
+
+- [ ] create logic that enables `sendButton` onto all input fields
+being valid;
+
+- [x] modify `InputField.java` so that warn messages are displayed at first
+render;
+
+- [ ] model service for sending e-mail messages;
