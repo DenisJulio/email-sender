@@ -23,10 +23,4 @@ public class Message {
 	@NotBlank
 	private String content;
 
-	public Message(String from, String to, String subject, String content) {
-		this.from = from;
-		this.to = to;
-		this.subject = subject;
-		this.content = content;
-	}
 }
