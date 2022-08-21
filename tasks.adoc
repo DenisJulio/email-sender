@@ -10,10 +10,10 @@ var input = InputField.builder()
   .build();
 ----
 
-- [ ] create logic that enables `sendButton` onto all input fields
-being valid;
-
 - [x] modify `InputField.java` so that warn messages are displayed at first
 render;
+
+- [ ] create logic that enables `sendButton` onto all input fields
+being valid;
 
 - [ ] model service for sending e-mail messages;

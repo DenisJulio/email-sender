@@ -14,6 +14,9 @@ public class WriteMessagePanel extends JPanel {
 
     private static final long serialVersionUID = 1L;
 
+    private boolean isToAddressValid = false;
+    private boolean isSubjectValid = false;
+    private boolean isMessageContentValid = false;
     private WriteMessagePanelController controller;
     private InputField toInputField;
     private InputField subjectInputField;
@@ -46,6 +49,11 @@ public class WriteMessagePanel extends JPanel {
         add(sendButton, sendButtonGBC);
     }
 
+    private void updateSendButtonEnablingStatus() {
+        var areAllInputsValid = (isToAddressValid && isSubjectValid) && isMessageContentValid;
+        sendButton.setEnabled(areAllInputsValid);
+    }
+
     // -------------------------------[Components]-----------------------------------------
 
     private InputField createToInputField() {
@@ -53,6 +61,10 @@ public class WriteMessagePanel extends JPanel {
                 .labelText("To:")
                 .warnLabelText("<html>&#9888 e-mail in the form: <i>example@mail.com</i></html>")
                 .validateInputBy(controller::isValidToInputField)
+                .addInputValidityListener(evt -> {
+                    isToAddressValid = (boolean) evt.getNewValue();
+                    updateSendButtonEnablingStatus();
+                })
                 .build();
     }
 
@@ -61,6 +73,10 @@ public class WriteMessagePanel extends JPanel {
                 .labelText("Subject:")
                 .warnLabelText("<html>&#9888 subject can't be empty</html>")
                 .validateInputBy(controller::isValidSubjectInputField)
+                .addInputValidityListener(evt -> {
+                    isSubjectValid = (boolean) evt.getNewValue();
+                    updateSendButtonEnablingStatus();
+                })
                 .build();
     }
 
@@ -69,6 +85,10 @@ public class WriteMessagePanel extends JPanel {
                 .labelText("Content:")
                 .warnLabelText("<html>&#9888 message content can't be empty</html>")
                 .validateInputBy(controller::isValidContentMessage)
+                .addInputValidityListener(evt -> {
+                    isMessageContentValid = (boolean) evt.getNewValue();
+                    updateSendButtonEnablingStatus();
+                })
                 .textComponentType(InputField.TEXT_AREA)
                 .build();
     }

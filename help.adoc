@@ -1,7 +1,7 @@
 === Docs
 
 * https://docs.asciidoctor.org/asciidoc/latest/[AsciiDoc Doc]
-* https://mailtrap.io/blog/jakarta-mail-tutorial/[Jakarta Mail Totorial | Mailtrip]
+* https://mailtrap.io/blog/jakarta-mail-tutorial/[Jakarta Mail Tutorial | Mailtrip]
 * https://jakarta.ee/specifications/mail/2.0/[Jakarta Mail Spec]
 
 ==== From dependencies
@@ -19,6 +19,6 @@
 
 === Ui Development Principles
 
-* *Define* expected state and useflow;
+* *Define* expected state and use flow;
 * *Constrain* the application into authoring only expected behavior;
 * *Guide* the user towards the expected behavior.
